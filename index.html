@@ -2,107 +2,96 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bahnhofsuhr Präzision</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bahnhofsuhr Fix</title>
     <style>
         :root {
-            --clock-size: 88vw;
-            --clock-color: #282828;
-            --accent-color: #d00;
+            --size: 85vw;
+            --black: #282828;
+            --red: #d00;
         }
-        @media (min-width: 600px) { :root { --clock-size: 450px; } }
+        @media (min-width: 600px) { :root { --size: 450px; } }
 
         body {
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0; background-color: #f0f0f0;
+            height: 100vh; margin: 0; background: #f0f0f0;
             overflow: hidden; touch-action: none;
         }
 
-        /* Die Uhr selbst */
         .clock {
-            width: var(--clock-size);
-            height: var(--clock-size);
-            background: white;
-            border-radius: 50%;
-            border: calc(var(--clock-size) * 0.04) solid var(--clock-color);
+            width: var(--size); height: var(--size);
+            background: white; border-radius: 50%;
+            border: calc(var(--size) * 0.04) solid var(--black);
             position: relative;
-            box-sizing: border-box;
         }
 
-        /* Markierungen */
-        .mark-container {
-            position: absolute; width: 100%; height: 100%;
-        }
+        /* Skala */
         .mark {
-            position: absolute; width: 1.6%; height: 6%;
-            background: var(--clock-color); left: 49.2%; top: 1.5%;
-            transform-origin: 50% calc(var(--clock-size) / 2 - 1.5%);
+            position: absolute; width: 1.5%; height: 6%;
+            background: var(--black); left: 49.25%; top: 1.5%;
+            transform-origin: 50% calc(var(--size) / 2 - 1.5%);
         }
         .mark.hour { width: 3.5%; height: 11%; left: 48.25%; }
 
-        /* Zeiger-System: Jeder Zeiger-Container füllt die GANZE Uhr aus */
-        .hand-container {
+        /* DER FIX: Eine zentrale Achse für ALLES */
+        .center-axis {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            will-change: transform;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* Die eigentlichen Zeiger-Balken */
-        .hand-part {
+        .hand {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--clock-color);
-            border-radius: 2px;
+            bottom: 0; /* Zeiger beginnt an der Achse */
+            transform-origin: bottom center;
+            will-change: transform;
+            -webkit-backface-visibility: hidden;
         }
 
         /* Stundenzeiger */
-        .hour-hand .hand-part {
-            width: 4%; height: 30%;
-            top: 25%; /* Positioniert den Zeiger im oberen Bereich */
-        }
-        /* Kleiner Überstand nach unten für die Optik */
-        .hour-hand::after {
-            content: ''; position: absolute; left: 50%; top: 50%;
-            width: 4%; height: 6%; background: var(--clock-color);
-            transform: translateX(-50%);
+        .hour-hand {
+            width: calc(var(--size) * 0.04);
+            height: calc(var(--size) * 0.28);
+            background: var(--black);
+            border-radius: 2px;
+            /* margin-bottom bestimmt den Überstand nach unten */
+            margin-bottom: calc(var(--size) * -0.06);
+            transform-origin: center calc(100% - (var(--size) * 0.06));
         }
 
         /* Minutenzeiger */
-        .minute-hand .hand-part {
-            width: 2.8%; height: 42%;
-            top: 10%;
-        }
-        .minute-hand::after {
-            content: ''; position: absolute; left: 50%; top: 50%;
-            width: 2.8%; height: 6%; background: var(--clock-color);
-            transform: translateX(-50%);
+        .minute-hand {
+            width: calc(var(--size) * 0.028);
+            height: calc(var(--size) * 0.42);
+            background: var(--black);
+            border-radius: 2px;
+            margin-bottom: calc(var(--size) * -0.06);
+            transform-origin: center calc(100% - (var(--size) * 0.06));
         }
 
         /* Sekundenzeiger */
-        .second-hand .hand-part {
-            width: 1.5%; height: 45%;
-            top: 8%; background: var(--accent-color);
+        .second-hand {
+            width: calc(var(--size) * 0.015);
+            height: calc(var(--size) * 0.45);
+            background: var(--red);
+            margin-bottom: calc(var(--size) * -0.1);
+            transform-origin: center calc(100% - (var(--size) * 0.1));
         }
-        /* Die rote Kelle */
-        .second-hand .hand-part::before {
-            content: ''; position: absolute; top: 0; left: 50%;
-            width: 400%; aspect-ratio: 1;
-            background: var(--accent-color); border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-        /* Überstand Sekundenzeiger nach unten */
+
+        /* Rote Kelle */
         .second-hand::after {
-            content: ''; position: absolute; left: 50%; top: 50%;
-            width: 1.5%; height: 10%; background: var(--accent-color);
-            transform: translateX(-50%);
+            content: ''; position: absolute; top: 0; left: 50%;
+            width: 450%; aspect-ratio: 1;
+            background: var(--red); border-radius: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .center-dot {
-            position: absolute; top: 50%; left: 50%;
-            width: 5%; height: 5%; background: var(--clock-color);
-            border-radius: 50%; transform: translate(-50%, -50%);
+            width: calc(var(--size) * 0.05);
+            height: calc(var(--size) * 0.05);
+            background: var(--black);
+            border-radius: 50%;
             z-index: 10;
         }
     </style>
@@ -110,53 +99,44 @@
 <body>
 
 <div class="clock">
-    <div id="marks" class="mark-container"></div>
+    <div id="marks"></div>
     
-    <div class="hand-container hour-hand" id="hour-c">
-        <div class="hand-part"></div>
+    <div class="center-axis">
+        <div class="hand hour-hand" id="h"></div>
+        <div class="hand minute-hand" id="m"></div>
+        <div class="hand second-hand" id="s"></div>
+        <div class="center-dot"></div>
     </div>
-    
-    <div class="hand-container minute-hand" id="minute-c">
-        <div class="hand-part"></div>
-    </div>
-    
-    <div class="hand-container second-hand" id="second-c">
-        <div class="hand-part"></div>
-    </div>
-
-    <div class="center-dot"></div>
 </div>
 
 <script>
-    // Markierungen generieren
-    const marksContainer = document.getElementById('marks');
+    const marks = document.getElementById('marks');
     for (let i = 0; i < 60; i++) {
         const mark = document.createElement('div');
         mark.className = i % 5 === 0 ? 'mark hour' : 'mark';
         mark.style.transform = `rotate(${i * 6}deg)`;
-        marksContainer.appendChild(mark);
+        marks.appendChild(mark);
     }
 
-    const hC = document.getElementById('hour-c');
-    const mC = document.getElementById('minute-c');
-    const sC = document.getElementById('second-c');
+    const hH = document.getElementById('h'),
+          mH = document.getElementById('m'),
+          sH = document.getElementById('s');
 
-    function update() {
+    function tick() {
         const now = new Date();
         const ms = now.getMilliseconds();
         const s = now.getSeconds() + ms / 1000;
         const m = now.getMinutes() + s / 60;
         const h = (now.getHours() % 12) + m / 60;
 
-        // Wir rotieren den Container, der exakt so groß ist wie die Uhr
-        // Der Drehpunkt ist somit automatisch die exakte Mitte (50% 50%)
-        hC.style.transform = `rotate(${h * 30}deg)`;
-        mC.style.transform = `rotate(${m * 6}deg)`;
-        sC.style.transform = `rotate(${s * 6}deg)`;
+        // Nutzt translate3d für GPU-Power und stabilere Pixel-Positionierung
+        hH.style.transform = `translateX(-50%) rotate(${h * 30}deg) translate3d(0,0,0)`;
+        mH.style.transform = `translateX(-50%) rotate(${m * 6}deg) translate3d(0,0,0)`;
+        sH.style.transform = `translateX(-50%) rotate(${s * 6}deg) translate3d(0,0,0)`;
 
-        requestAnimationFrame(update);
+        requestAnimationFrame(tick);
     }
-    update();
+    tick();
 </script>
 
 </body>
