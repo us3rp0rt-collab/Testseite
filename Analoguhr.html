@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analoge Bahnhofsuhr</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+        }
+
+        .clock {
+            width: 400px;
+            height: 400px;
+            background-color: white;
+            border: 15px solid #333;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* Zifferblatt Markierungen */
+        .marks {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+        }
+
+        .mark {
+            position: absolute;
+            width: 4px;
+            height: 20px;
+            background: #333;
+            left: 198px;
+            transform-origin: 2px 200px;
+        }
+
+        .mark.hour {
+            width: 8px;
+            height: 35px;
+            left: 196px;
+        }
+
+        /* Zeiger */
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .hour-hand {
+            width: 12px;
+            height: 100px;
+            margin-left: -6px;
+            z-index: 3;
+        }
+
+        .minute-hand {
+            width: 8px;
+            height: 150px;
+            margin-left: -4px;
+            z-index: 4;
+        }
+
+        .second-hand {
+            width: 4px;
+            height: 160px;
+            margin-left: -2px;
+            background: #d00; /* Typisches Rot der Bahnhofsuhr */
+            z-index: 5;
+        }
+
+        /* Die markante rote "Kelle" am Ende des Sekundenzeigers */
+        .second-hand::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -8px;
+            width: 20px;
+            height: 20px;
+            background: #d00;
+            border-radius: 50%;
+        }
+
+        .center-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            background: #333;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="clock">
+    <div class="marks" id="marks"></div>
+    <div class="hand hour-hand" id="hour"></div>
+    <div class="hand minute-hand" id="minute"></div>
+    <div class="hand second-hand" id="second"></div>
+    <div class="center-dot"></div>
+</div>
+
+<script>
+    // Zifferblatt Markierungen dynamisch generieren
+    const marksContainer = document.getElementById('marks');
+    for (let i = 0; i < 60; i++) {
+        const mark = document.createElement('div');
+        mark.className = i % 5 === 0 ? 'mark hour' : 'mark';
+        mark.style.transform = `rotate(${i * 6}deg)`;
+        marksContainer.appendChild(mark);
+    }
+
+    const hourHand = document.getElementById('hour');
+    const minuteHand = document.getElementById('minute');
+    const secondHand = document.getElementById('second');
+
+    function updateClock() {
+        const now = new Date();
+        
+        // Millisekunden für die stufenlose Bewegung einbeziehen
+        const ms = now.getMilliseconds();
+        const seconds = now.getSeconds() + ms / 1000;
+        const minutes = now.getMinutes() + seconds / 60;
+        const hours = (now.getHours() % 12) + minutes / 60;
+
+        // Winkel berechnen (360 Grad / Einheiten)
+        const secondDeg = seconds * 6;      
+        const minuteDeg = minutes * 6;      
+        const hourDeg = hours * 30;         
+
+        secondHand.style.transform = `rotate(${secondDeg}deg)`;
+        minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+        hourHand.style.transform = `rotate(${hourDeg}deg)`;
+
+        // Update bei jedem Frame (ca. 60fps) für maximale Flüssigkeit
+        requestAnimationFrame(updateClock);
+    }
+
+    updateClock();
+</script>
+
+</body>
+</html>
