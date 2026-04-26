@@ -2,9 +2,22 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analoge Bahnhofsuhr</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bahnhofsuhr Mobil</title>
     <style>
+        :root {
+            --clock-size: 85vw; /* Standardgröße für Mobilgeräte */
+            --clock-border: 3.5vw;
+        }
+
+        /* Auf größeren Bildschirmen die Uhr begrenzen */
+        @media (min-width: 600px) {
+            :root {
+                --clock-size: 400px;
+                --clock-border: 15px;
+            }
+        }
+
         body {
             display: flex;
             justify-content: center;
@@ -12,20 +25,21 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
-            font-family: sans-serif;
+            overflow: hidden; /* Verhindert Scrollen auf Mobilgeräten */
+            touch-action: none;
         }
 
         .clock {
-            width: 400px;
-            height: 400px;
+            width: var(--clock-size);
+            height: var(--clock-size);
             background-color: white;
-            border: 15px solid #333;
+            border: var(--clock-border) solid #333;
             border-radius: 50%;
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* Zifferblatt Markierungen */
+        /* Markierungen */
         .marks {
             width: 100%;
             height: 100%;
@@ -34,69 +48,80 @@
 
         .mark {
             position: absolute;
-            width: 4px;
-            height: 20px;
+            width: 1%;
+            height: 5%;
             background: #333;
-            left: 198px;
-            transform-origin: 2px 200px;
+            left: 49.5%;
+            top: 0;
+            transform-origin: 50% calc(var(--clock-size) / 2);
         }
 
         .mark.hour {
-            width: 8px;
-            height: 35px;
-            left: 196px;
+            width: 2%;
+            height: 9%;
         }
 
-        /* Zeiger */
+        /* Zeiger-Basis */
         .hand {
             position: absolute;
             bottom: 50%;
             left: 50%;
             transform-origin: bottom center;
             background: #333;
-            border-radius: 4px;
+            border-radius: 10px;
         }
 
         .hour-hand {
-            width: 12px;
-            height: 100px;
-            margin-left: -6px;
+            width: 3%;
+            height: 25%;
+            margin-left: -1.5%;
             z-index: 3;
         }
 
         .minute-hand {
-            width: 8px;
-            height: 150px;
-            margin-left: -4px;
+            width: 2%;
+            height: 38%;
+            margin-left: -1%;
             z-index: 4;
         }
 
         .second-hand {
-            width: 4px;
-            height: 160px;
-            margin-left: -2px;
-            background: #d00; /* Typisches Rot der Bahnhofsuhr */
+            width: 1%;
+            height: 42%;
+            margin-left: -0.5%;
+            background: #d00;
             z-index: 5;
+            border-radius: 0;
         }
 
-        /* Die markante rote "Kelle" am Ende des Sekundenzeigers */
+        /* Rote Kelle */
         .second-hand::after {
             content: '';
             position: absolute;
-            top: -15px;
-            left: -8px;
-            width: 20px;
-            height: 20px;
+            top: -4.5vw;
+            left: -2.25vw;
+            width: 5.5vw;
+            height: 5.5vw;
             background: #d00;
             border-radius: 50%;
+        }
+
+        /* Desktop-Anpassung der Kelle */
+        @media (min-width: 600px) {
+            .second-hand::after {
+                top: -20px;
+                left: -10px;
+                width: 24px;
+                height: 24px;
+            }
         }
 
         .center-dot {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 16px;
-            height: 16px;
+            width: 4%;
+            height: 4%;
             background: #333;
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -115,7 +140,6 @@
 </div>
 
 <script>
-    // Zifferblatt Markierungen dynamisch generieren
     const marksContainer = document.getElementById('marks');
     for (let i = 0; i < 60; i++) {
         const mark = document.createElement('div');
@@ -130,23 +154,15 @@
 
     function updateClock() {
         const now = new Date();
-        
-        // Millisekunden für die stufenlose Bewegung einbeziehen
         const ms = now.getMilliseconds();
         const seconds = now.getSeconds() + ms / 1000;
         const minutes = now.getMinutes() + seconds / 60;
         const hours = (now.getHours() % 12) + minutes / 60;
 
-        // Winkel berechnen (360 Grad / Einheiten)
-        const secondDeg = seconds * 6;      
-        const minuteDeg = minutes * 6;      
-        const hourDeg = hours * 30;         
+        secondHand.style.transform = `rotate(${seconds * 6}deg)`;
+        minuteHand.style.transform = `rotate(${minutes * 6}deg)`;
+        hourHand.style.transform = `rotate(${hours * 30}deg)`;
 
-        secondHand.style.transform = `rotate(${secondDeg}deg)`;
-        minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
-        hourHand.style.transform = `rotate(${hourDeg}deg)`;
-
-        // Update bei jedem Frame (ca. 60fps) für maximale Flüssigkeit
         requestAnimationFrame(updateClock);
     }
 
