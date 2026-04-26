@@ -3,43 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bahnhofsuhr NESPINKEJ</title>
+    <title>Bahnhofsuhr NESPINKEJ Zentriert</title>
     <style>
         :root {
-            --size: 82vw;
+            --size: 85vw;
             --black: #222;
             --red: #cc0000;
         }
-        @media (min-width: 600px) { :root { --size: 420px; } }
+        @media (min-width: 600px) { :root { --size: 450px; } }
 
         body {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center;
             height: 100vh; margin: 0; background: #f0f0f0;
             overflow: hidden; font-family: 'Arial Black', sans-serif;
-        }
-
-        /* Die Schrift direkt über der Uhr */
-        .curved-text-container {
-            position: relative;
-            width: var(--size);
-            height: 0; /* Container hat keine Höhe, damit er nicht schiebt */
-            display: flex;
-            justify-content: center;
-            z-index: 20;
-        }
-
-        .char {
-            position: absolute;
-            /* Der Drehpunkt wird so gesetzt, dass die Buchstaben am Rand kleben */
-            height: calc(var(--size) * 0.55); 
-            bottom: calc(var(--size) * -0.05);
-            transform-origin: bottom center;
-            font-size: calc(var(--size) * 0.13);
-            color: var(--red);
-            -webkit-text-stroke: 1.5px black;
-            font-weight: 900;
-            white-space: nowrap;
-            will-change: transform;
         }
 
         .clock {
@@ -47,7 +23,41 @@
             background: white; border-radius: 50%;
             border: calc(var(--size) * 0.045) solid var(--black);
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            /* Alles im Inneren zentrieren */
+            display: grid;
+            place-items: center;
+        }
+
+        /* Container für die Rundschrift - jetzt fest zentriert */
+        .inner-text-container {
+            position: absolute;
+            top: 45%; /* Drehpunkt der Buchstaben-Radien */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0; height: 0;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .char {
+            position: absolute;
+            /* Der Radius, mit dem die Buchstaben von der Mitte nach oben wandern */
+            height: calc(var(--size) * 0.65); 
+            bottom: 0;
+            left: 50%;
+            transform-origin: bottom center;
+            font-size: calc(var(--size) * 0.09);
+            color: var(--red);
+            -webkit-text-stroke: 1.2px black;
+            font-weight: 900;
+            white-space: nowrap;
+            /* Zentriert den einzelnen Buchstaben am Strahl */
+            margin-left: -0.5em; 
+            text-align: center;
+            width: 1em;
+            will-change: transform;
         }
 
         .mark {
@@ -57,8 +67,9 @@
         .mark.hour { width: 3.8%; height: 12%; left: 48.1%; }
 
         .center-axis {
-            position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            position: absolute; width: 0; height: 0;
             display: flex; justify-content: center; align-items: center;
+            z-index: 10;
         }
 
         .hand { position: absolute; bottom: 0; transform-origin: bottom center; will-change: transform; border: 0.5px solid white; }
@@ -66,17 +77,19 @@
         .minute-hand { width: calc(var(--size) * 0.03); height: calc(var(--size) * 0.40); background: var(--black); border-radius: 3px; margin-bottom: calc(var(--size) * -0.06); transform-origin: center calc(100% - (var(--size) * 0.06)); z-index: 3; }
         .second-hand { width: calc(var(--size) * 0.015); height: calc(var(--size) * 0.44); background: var(--red); margin-bottom: calc(var(--size) * -0.12); transform-origin: center calc(100% - (var(--size) * 0.12)); z-index: 4; border: none; }
         .second-hand::after { content: ''; position: absolute; top: 0; left: 50%; width: 450%; aspect-ratio: 1; background: var(--red); border-radius: 50%; transform: translate(-50%, -50%); }
-        .center-dot { width: calc(var(--size) * 0.06); height: calc(var(--size) * 0.06); background: var(--black); border-radius: 50%; z-index: 10; }
+        .center-dot { width: calc(var(--size) * 0.06); height: calc(var(--size) * 0.06); background: var(--black); border-radius: 50%; z-index: 11; }
     </style>
 </head>
 <body>
 
-    <div class="curved-text-container" id="wobbleContainer">
-        <!-- Buchstaben per JS -->
-    </div>
-
     <div class="clock">
-        <div id="marks"></div>
+        <!-- Markierungen -->
+        <div id="marks" style="position: absolute; inset: 0;"></div>
+
+        <!-- Schriftzug zentriert -->
+        <div class="inner-text-container" id="wobbleContainer"></div>
+        
+        <!-- Achse und Zeiger -->
         <div class="center-axis">
             <div class="hand hour-hand" id="h"></div>
             <div class="hand minute-hand" id="m"></div>
@@ -97,8 +110,8 @@
     const container = document.getElementById('wobbleContainer');
     const text = "NESPINKEJ";
     const chars = [];
-    const startAngle = -45;
-    const endAngle = 45;
+    const startAngle = -38;
+    const endAngle = 38;
     const step = (endAngle - startAngle) / (text.length - 1);
 
     text.split('').forEach((char, i) => {
@@ -122,11 +135,11 @@
 
         chars.forEach((span, i) => {
             const angle = parseFloat(span.dataset.baseAngle);
-            // Das Wobbeln wurde etwas feiner eingestellt
-            const wobbleY = Math.sin((time / 250) + i * 0.7) * 5; 
-            const wobbleR = Math.sin((time / 400) + i * 0.5) * 2; // Leichtes seitliches Schwanken
+            const wobbleY = Math.sin((time / 250) + i * 0.7) * 4; 
+            const wobbleR = Math.sin((time / 400) + i * 0.5) * 2; 
             
-            span.style.transform = `rotate(${angle + wobbleR}deg) translateY(${wobbleY}px)`;
+            // WICHTIG: translateX(-50%) hält die Buchstaben auf der vertikalen Achse zentriert
+            span.style.transform = `translateX(-50%) rotate(${angle + wobbleR}deg) translateY(${wobbleY}px)`;
         });
 
         requestAnimationFrame(update);
