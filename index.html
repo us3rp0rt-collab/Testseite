@@ -3,20 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bahnhofsuhr Optimiert</title>
+    <title>Bahnhofsuhr NESPINKEJ</title>
     <style>
         :root {
-            --size: 88vw;
-            --black: #222222;
+            --size: 82vw;
+            --black: #222;
             --red: #cc0000;
-            --outline: rgba(255,255,255,0.8);
         }
-        @media (min-width: 600px) { :root { --size: 450px; } }
+        @media (min-width: 600px) { :root { --size: 420px; } }
 
         body {
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0; background: #ececec;
-            overflow: hidden; touch-action: none;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; background: #f0f0f0;
+            overflow: hidden; font-family: 'Arial Black', sans-serif;
+        }
+
+        /* Die Schrift direkt über der Uhr */
+        .curved-text-container {
+            position: relative;
+            width: var(--size);
+            height: 0; /* Container hat keine Höhe, damit er nicht schiebt */
+            display: flex;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        .char {
+            position: absolute;
+            /* Der Drehpunkt wird so gesetzt, dass die Buchstaben am Rand kleben */
+            height: calc(var(--size) * 0.55); 
+            bottom: calc(var(--size) * -0.05);
+            transform-origin: bottom center;
+            font-size: calc(var(--size) * 0.13);
+            color: var(--red);
+            -webkit-text-stroke: 1.5px black;
+            font-weight: 900;
+            white-space: nowrap;
+            will-change: transform;
         }
 
         .clock {
@@ -24,91 +47,43 @@
             background: white; border-radius: 50%;
             border: calc(var(--size) * 0.045) solid var(--black);
             position: relative;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         .mark {
-            position: absolute; width: 1.6%; height: 6%;
-            background: var(--black); left: 49.2%; top: 1.5%;
-            transform-origin: 50% calc(var(--size) / 2 - 1.5%);
+            position: absolute; width: 1.6%; height: 6%; background: var(--black);
+            left: 49.2%; top: 1.5%; transform-origin: 50% calc(var(--size) / 2 - 1.5%);
         }
         .mark.hour { width: 3.8%; height: 12%; left: 48.1%; }
 
         .center-axis {
-            position: absolute; top: 50%; left: 50%;
-            width: 0; height: 0;
+            position: absolute; top: 50%; left: 50%; width: 0; height: 0;
             display: flex; justify-content: center; align-items: center;
         }
 
-        .hand {
-            position: absolute; bottom: 0;
-            transform-origin: bottom center;
-            will-change: transform;
-            /* Der Trick gegen das Verschwimmen: Eine feine Lichtkante */
-            box-shadow: 0 0 0 0.5px var(--outline);
-        }
-
-        /* Stundenzeiger: Kürzer & Kräftiger */
-        .hour-hand {
-            width: calc(var(--size) * 0.045);
-            height: calc(var(--size) * 0.25);
-            background: var(--black);
-            border-radius: 4px 4px 2px 2px;
-            margin-bottom: calc(var(--size) * -0.06);
-            transform-origin: center calc(100% - (var(--size) * 0.06));
-            z-index: 2;
-        }
-
-        /* Minutenzeiger: Länger & Schlanker */
-        .minute-hand {
-            width: calc(var(--size) * 0.03);
-            height: calc(var(--size) * 0.40);
-            background: var(--black);
-            border-radius: 3px 3px 1px 1px;
-            margin-bottom: calc(var(--size) * -0.06);
-            transform-origin: center calc(100% - (var(--size) * 0.06));
-            z-index: 3;
-        }
-
-        /* Sekundenzeiger: Filigraner Kontrast */
-        .second-hand {
-            width: calc(var(--size) * 0.015);
-            height: calc(var(--size) * 0.44);
-            background: var(--red);
-            margin-bottom: calc(var(--size) * -0.12);
-            transform-origin: center calc(100% - (var(--size) * 0.12));
-            z-index: 4;
-            box-shadow: none; /* Rot braucht keine Outline */
-        }
-
-        .second-hand::after {
-            content: ''; position: absolute; top: 0; left: 50%;
-            width: 450%; aspect-ratio: 1;
-            background: var(--red); border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .center-dot {
-            width: calc(var(--size) * 0.06);
-            height: calc(var(--size) * 0.06);
-            background: var(--black);
-            border-radius: 50%;
-            z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .hand { position: absolute; bottom: 0; transform-origin: bottom center; will-change: transform; border: 0.5px solid white; }
+        .hour-hand { width: calc(var(--size) * 0.045); height: calc(var(--size) * 0.25); background: var(--black); border-radius: 4px; margin-bottom: calc(var(--size) * -0.06); transform-origin: center calc(100% - (var(--size) * 0.06)); z-index: 2; }
+        .minute-hand { width: calc(var(--size) * 0.03); height: calc(var(--size) * 0.40); background: var(--black); border-radius: 3px; margin-bottom: calc(var(--size) * -0.06); transform-origin: center calc(100% - (var(--size) * 0.06)); z-index: 3; }
+        .second-hand { width: calc(var(--size) * 0.015); height: calc(var(--size) * 0.44); background: var(--red); margin-bottom: calc(var(--size) * -0.12); transform-origin: center calc(100% - (var(--size) * 0.12)); z-index: 4; border: none; }
+        .second-hand::after { content: ''; position: absolute; top: 0; left: 50%; width: 450%; aspect-ratio: 1; background: var(--red); border-radius: 50%; transform: translate(-50%, -50%); }
+        .center-dot { width: calc(var(--size) * 0.06); height: calc(var(--size) * 0.06); background: var(--black); border-radius: 50%; z-index: 10; }
     </style>
 </head>
 <body>
 
-<div class="clock">
-    <div id="marks"></div>
-    <div class="center-axis">
-        <div class="hand hour-hand" id="h"></div>
-        <div class="hand minute-hand" id="m"></div>
-        <div class="hand second-hand" id="s"></div>
-        <div class="center-dot"></div>
+    <div class="curved-text-container" id="wobbleContainer">
+        <!-- Buchstaben per JS -->
     </div>
-</div>
+
+    <div class="clock">
+        <div id="marks"></div>
+        <div class="center-axis">
+            <div class="hand hour-hand" id="h"></div>
+            <div class="hand minute-hand" id="m"></div>
+            <div class="hand second-hand" id="s"></div>
+            <div class="center-dot"></div>
+        </div>
+    </div>
 
 <script>
     const marks = document.getElementById('marks');
@@ -119,24 +94,44 @@
         marks.appendChild(mark);
     }
 
-    const hH = document.getElementById('h'),
-          mH = document.getElementById('m'),
-          sH = document.getElementById('s');
+    const container = document.getElementById('wobbleContainer');
+    const text = "NESPINKEJ";
+    const chars = [];
+    const startAngle = -45;
+    const endAngle = 45;
+    const step = (endAngle - startAngle) / (text.length - 1);
 
-    function tick() {
-        const now = new Date();
-        const ms = now.getMilliseconds();
-        const s = now.getSeconds() + ms / 1000;
-        const m = now.getMinutes() + s / 60;
-        const h = (now.getHours() % 12) + m / 60;
+    text.split('').forEach((char, i) => {
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = char;
+        span.dataset.baseAngle = startAngle + (i * step);
+        container.appendChild(span);
+        chars.push(span);
+    });
 
-        hH.style.transform = `translateX(-50%) rotate(${h * 30}deg) translate3d(0,0,0)`;
-        mH.style.transform = `translateX(-50%) rotate(${m * 6}deg) translate3d(0,0,0)`;
-        sH.style.transform = `translateX(-50%) rotate(${s * 6}deg) translate3d(0,0,0)`;
+    const hH = document.getElementById('h'), mH = document.getElementById('m'), sH = document.getElementById('s');
 
-        requestAnimationFrame(tick);
+    function update(time) {
+        const now = new Date(), ms = now.getMilliseconds();
+        const s = now.getSeconds() + ms / 1000, m = now.getMinutes() + s / 60, h = (now.getHours() % 12) + m / 60;
+        
+        hH.style.transform = `translateX(-50%) rotate(${h * 30}deg)`;
+        mH.style.transform = `translateX(-50%) rotate(${m * 6}deg)`;
+        sH.style.transform = `translateX(-50%) rotate(${s * 6}deg)`;
+
+        chars.forEach((span, i) => {
+            const angle = parseFloat(span.dataset.baseAngle);
+            // Das Wobbeln wurde etwas feiner eingestellt
+            const wobbleY = Math.sin((time / 250) + i * 0.7) * 5; 
+            const wobbleR = Math.sin((time / 400) + i * 0.5) * 2; // Leichtes seitliches Schwanken
+            
+            span.style.transform = `rotate(${angle + wobbleR}deg) translateY(${wobbleY}px)`;
+        });
+
+        requestAnimationFrame(update);
     }
-    tick();
+    requestAnimationFrame(update);
 </script>
 
 </body>
