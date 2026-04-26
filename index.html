@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bahnhofsuhr NESPINKEJ Zentriert</title>
+    <title>Bahnhofsuhr NESPINKEJ Inside</title>
     <style>
         :root {
             --size: 85vw;
@@ -23,53 +23,45 @@
             background: white; border-radius: 50%;
             border: calc(var(--size) * 0.045) solid var(--black);
             position: relative;
-            /* Alles im Inneren zentrieren */
-            display: grid;
-            place-items: center;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* Container für die Rundschrift - jetzt fest zentriert */
+        /* Container für die Schrift - Exakt in der Mitte der Uhr fixiert */
         .inner-text-container {
             position: absolute;
-            top: 45%; /* Drehpunkt der Buchstaben-Radien */
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 50%; left: 50%;
             width: 0; height: 0;
             pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         .char {
             position: absolute;
-            /* Der Radius, mit dem die Buchstaben von der Mitte nach oben wandern */
-            height: calc(var(--size) * 0.65); 
-            bottom: 0;
-            left: 50%;
+            /* RADIUS VERKLEINERT: Zieht die Schrift ins weiße Feld hinein */
+            height: calc(var(--size) * 0.32); 
+            bottom: 0; left: 50%;
             transform-origin: bottom center;
-            font-size: calc(var(--size) * 0.09);
+            font-size: calc(var(--size) * 0.08);
             color: var(--red);
-            -webkit-text-stroke: 1.2px black;
+            -webkit-text-stroke: 1px black;
             font-weight: 900;
             white-space: nowrap;
-            /* Zentriert den einzelnen Buchstaben am Strahl */
-            margin-left: -0.5em; 
             text-align: center;
             width: 1em;
+            margin-left: -0.5em;
             will-change: transform;
+            z-index: 1; /* Hinter den Zeigern */
         }
 
         .mark {
             position: absolute; width: 1.6%; height: 6%; background: var(--black);
             left: 49.2%; top: 1.5%; transform-origin: 50% calc(var(--size) / 2 - 1.5%);
         }
-        .mark.hour { width: 3.8%; height: 12%; left: 48.1%; }
+        .mark.hour { width: 3.8%; height: 11%; left: 48.1%; }
 
         .center-axis {
             position: absolute; width: 0; height: 0;
             display: flex; justify-content: center; align-items: center;
-            z-index: 10;
+            z-index: 10; /* Zeiger IMMER über der Schrift */
         }
 
         .hand { position: absolute; bottom: 0; transform-origin: bottom center; will-change: transform; border: 0.5px solid white; }
@@ -83,13 +75,12 @@
 <body>
 
     <div class="clock">
-        <!-- Markierungen -->
         <div id="marks" style="position: absolute; inset: 0;"></div>
-
-        <!-- Schriftzug zentriert -->
+        
+        <!-- Schriftzug Container -->
         <div class="inner-text-container" id="wobbleContainer"></div>
         
-        <!-- Achse und Zeiger -->
+        <!-- Zeiger-System -->
         <div class="center-axis">
             <div class="hand hour-hand" id="h"></div>
             <div class="hand minute-hand" id="m"></div>
@@ -110,8 +101,8 @@
     const container = document.getElementById('wobbleContainer');
     const text = "NESPINKEJ";
     const chars = [];
-    const startAngle = -38;
-    const endAngle = 38;
+    const startAngle = -35; 
+    const endAngle = 35;
     const step = (endAngle - startAngle) / (text.length - 1);
 
     text.split('').forEach((char, i) => {
@@ -138,7 +129,6 @@
             const wobbleY = Math.sin((time / 250) + i * 0.7) * 4; 
             const wobbleR = Math.sin((time / 400) + i * 0.5) * 2; 
             
-            // WICHTIG: translateX(-50%) hält die Buchstaben auf der vertikalen Achse zentriert
             span.style.transform = `translateX(-50%) rotate(${angle + wobbleR}deg) translateY(${wobbleY}px)`;
         });
 
