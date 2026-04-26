@@ -2,20 +2,22 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bahnhofsuhr Mobil</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Bahnhofsuhr Mobil Fix</title>
     <style>
         :root {
-            --clock-size: 85vw; /* Standardgröße für Mobilgeräte */
-            --clock-border: 3.5vw;
+            /* Wir lassen 5vw Puffer, damit nichts am Rand klebt oder abgeschnitten wird */
+            --size: 85vw; 
+            --bg-color: #f0f0f0;
         }
 
-        /* Auf größeren Bildschirmen die Uhr begrenzen */
         @media (min-width: 600px) {
-            :root {
-                --clock-size: 400px;
-                --clock-border: 15px;
-            }
+            :root { --size: 400px; }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -24,104 +26,100 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
-            overflow: hidden; /* Verhindert Scrollen auf Mobilgeräten */
+            background-color: var(--bg-color);
+            overflow: hidden;
             touch-action: none;
         }
 
-        .clock {
-            width: var(--clock-size);
-            height: var(--clock-size);
-            background-color: white;
-            border: var(--clock-border) solid #333;
-            border-radius: 50%;
+        .clock-container {
+            width: var(--size);
+            height: var(--size);
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            /* Verhindert Clipping-Fehler in Safari */
+            -webkit-transform: translateZ(0); 
+            transform: translateZ(0);
         }
 
-        /* Markierungen */
-        .marks {
+        .clock-face {
             width: 100%;
             height: 100%;
-            position: absolute;
+            background-color: white;
+            border: calc(var(--size) * 0.04) solid #333; /* Dynamischer Rahmen */
+            border-radius: 50%;
+            position: relative;
         }
 
+        /* Die Striche */
         .mark {
             position: absolute;
-            width: 1%;
+            width: 1.5%;
             height: 5%;
             background: #333;
-            left: 49.5%;
-            top: 0;
-            transform-origin: 50% calc(var(--clock-size) / 2);
+            left: 49.25%;
+            top: 1%;
+            transform-origin: 50% calc(var(--size) / 2 - 1%);
         }
 
         .mark.hour {
-            width: 2%;
-            height: 9%;
+            width: 2.5%;
+            height: 10%;
+            left: 48.75%;
         }
 
-        /* Zeiger-Basis */
+        /* Zeiger-Konfiguration */
         .hand {
             position: absolute;
             bottom: 50%;
             left: 50%;
             transform-origin: bottom center;
             background: #333;
-            border-radius: 10px;
+            border-radius: 100px;
+            /* Hardware-Beschleunigung für flüssiges iPhone-Rendering */
+            will-change: transform;
         }
 
         .hour-hand {
-            width: 3%;
-            height: 25%;
-            margin-left: -1.5%;
+            width: 3.5%;
+            height: 28%;
+            margin-left: -1.75%;
             z-index: 3;
         }
 
         .minute-hand {
-            width: 2%;
-            height: 38%;
-            margin-left: -1%;
+            width: 2.5%;
+            height: 40%;
+            margin-left: -1.25%;
             z-index: 4;
         }
 
         .second-hand {
-            width: 1%;
+            width: 1.5%;
             height: 42%;
-            margin-left: -0.5%;
+            margin-left: -0.75%;
             background: #d00;
             z-index: 5;
             border-radius: 0;
         }
 
-        /* Rote Kelle */
+        /* Die rote Kelle am Sekundenzeiger */
         .second-hand::after {
             content: '';
             position: absolute;
-            top: -4.5vw;
-            left: -2.25vw;
-            width: 5.5vw;
-            height: 5.5vw;
+            top: -12%; /* Relativ zum Zeiger */
+            left: 50%;
+            width: 400%; /* Macht sie kreisförmig breit */
+            aspect-ratio: 1;
             background: #d00;
             border-radius: 50%;
-        }
-
-        /* Desktop-Anpassung der Kelle */
-        @media (min-width: 600px) {
-            .second-hand::after {
-                top: -20px;
-                left: -10px;
-                width: 24px;
-                height: 24px;
-            }
+            transform: translateX(-50%);
         }
 
         .center-dot {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 4%;
-            height: 4%;
+            width: 4.5%;
+            height: 4.5%;
             background: #333;
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -131,12 +129,14 @@
 </head>
 <body>
 
-<div class="clock">
-    <div class="marks" id="marks"></div>
-    <div class="hand hour-hand" id="hour"></div>
-    <div class="hand minute-hand" id="minute"></div>
-    <div class="hand second-hand" id="second"></div>
-    <div class="center-dot"></div>
+<div class="clock-container">
+    <div class="clock-face">
+        <div id="marks"></div>
+        <div class="hand hour-hand" id="hour"></div>
+        <div class="hand minute-hand" id="minute"></div>
+        <div class="hand second-hand" id="second"></div>
+        <div class="center-dot"></div>
+    </div>
 </div>
 
 <script>
@@ -148,25 +148,24 @@
         marksContainer.appendChild(mark);
     }
 
-    const hourHand = document.getElementById('hour');
-    const minuteHand = document.getElementById('minute');
-    const secondHand = document.getElementById('second');
+    const hHand = document.getElementById('hour');
+    const mHand = document.getElementById('minute');
+    const sHand = document.getElementById('second');
 
-    function updateClock() {
+    function animate() {
         const now = new Date();
         const ms = now.getMilliseconds();
-        const seconds = now.getSeconds() + ms / 1000;
-        const minutes = now.getMinutes() + seconds / 60;
-        const hours = (now.getHours() % 12) + minutes / 60;
+        const s = now.getSeconds() + ms / 1000;
+        const m = now.getMinutes() + s / 60;
+        const h = (now.getHours() % 12) + m / 60;
 
-        secondHand.style.transform = `rotate(${seconds * 6}deg)`;
-        minuteHand.style.transform = `rotate(${minutes * 6}deg)`;
-        hourHand.style.transform = `rotate(${hours * 30}deg)`;
+        sHand.style.transform = `rotate(${s * 6}deg)`;
+        mHand.style.transform = `rotate(${m * 6}deg)`;
+        hHand.style.transform = `rotate(${h * 30}deg)`;
 
-        requestAnimationFrame(updateClock);
+        requestAnimationFrame(animate);
     }
-
-    updateClock();
+    animate();
 </script>
 
 </body>
