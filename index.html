@@ -3,83 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bahnhofsuhr Fix</title>
+    <title>Bahnhofsuhr Optimiert</title>
     <style>
         :root {
-            --size: 85vw;
-            --black: #282828;
-            --red: #d00;
+            --size: 88vw;
+            --black: #222222;
+            --red: #cc0000;
+            --outline: rgba(255,255,255,0.8);
         }
         @media (min-width: 600px) { :root { --size: 450px; } }
 
         body {
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0; background: #f0f0f0;
+            height: 100vh; margin: 0; background: #ececec;
             overflow: hidden; touch-action: none;
         }
 
         .clock {
             width: var(--size); height: var(--size);
             background: white; border-radius: 50%;
-            border: calc(var(--size) * 0.04) solid var(--black);
+            border: calc(var(--size) * 0.045) solid var(--black);
             position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
         }
 
-        /* Skala */
         .mark {
-            position: absolute; width: 1.5%; height: 6%;
-            background: var(--black); left: 49.25%; top: 1.5%;
+            position: absolute; width: 1.6%; height: 6%;
+            background: var(--black); left: 49.2%; top: 1.5%;
             transform-origin: 50% calc(var(--size) / 2 - 1.5%);
         }
-        .mark.hour { width: 3.5%; height: 11%; left: 48.25%; }
+        .mark.hour { width: 3.8%; height: 12%; left: 48.1%; }
 
-        /* DER FIX: Eine zentrale Achse für ALLES */
         .center-axis {
-            position: absolute;
-            top: 50%; left: 50%;
+            position: absolute; top: 50%; left: 50%;
             width: 0; height: 0;
             display: flex; justify-content: center; align-items: center;
         }
 
         .hand {
-            position: absolute;
-            bottom: 0; /* Zeiger beginnt an der Achse */
+            position: absolute; bottom: 0;
             transform-origin: bottom center;
             will-change: transform;
-            -webkit-backface-visibility: hidden;
+            /* Der Trick gegen das Verschwimmen: Eine feine Lichtkante */
+            box-shadow: 0 0 0 0.5px var(--outline);
         }
 
-        /* Stundenzeiger */
+        /* Stundenzeiger: Kürzer & Kräftiger */
         .hour-hand {
-            width: calc(var(--size) * 0.04);
-            height: calc(var(--size) * 0.28);
+            width: calc(var(--size) * 0.045);
+            height: calc(var(--size) * 0.25);
             background: var(--black);
-            border-radius: 2px;
-            /* margin-bottom bestimmt den Überstand nach unten */
+            border-radius: 4px 4px 2px 2px;
             margin-bottom: calc(var(--size) * -0.06);
             transform-origin: center calc(100% - (var(--size) * 0.06));
+            z-index: 2;
         }
 
-        /* Minutenzeiger */
+        /* Minutenzeiger: Länger & Schlanker */
         .minute-hand {
-            width: calc(var(--size) * 0.028);
-            height: calc(var(--size) * 0.42);
+            width: calc(var(--size) * 0.03);
+            height: calc(var(--size) * 0.40);
             background: var(--black);
-            border-radius: 2px;
+            border-radius: 3px 3px 1px 1px;
             margin-bottom: calc(var(--size) * -0.06);
             transform-origin: center calc(100% - (var(--size) * 0.06));
+            z-index: 3;
         }
 
-        /* Sekundenzeiger */
+        /* Sekundenzeiger: Filigraner Kontrast */
         .second-hand {
             width: calc(var(--size) * 0.015);
-            height: calc(var(--size) * 0.45);
+            height: calc(var(--size) * 0.44);
             background: var(--red);
-            margin-bottom: calc(var(--size) * -0.1);
-            transform-origin: center calc(100% - (var(--size) * 0.1));
+            margin-bottom: calc(var(--size) * -0.12);
+            transform-origin: center calc(100% - (var(--size) * 0.12));
+            z-index: 4;
+            box-shadow: none; /* Rot braucht keine Outline */
         }
 
-        /* Rote Kelle */
         .second-hand::after {
             content: ''; position: absolute; top: 0; left: 50%;
             width: 450%; aspect-ratio: 1;
@@ -88,11 +89,12 @@
         }
 
         .center-dot {
-            width: calc(var(--size) * 0.05);
-            height: calc(var(--size) * 0.05);
+            width: calc(var(--size) * 0.06);
+            height: calc(var(--size) * 0.06);
             background: var(--black);
             border-radius: 50%;
             z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
     </style>
 </head>
@@ -100,7 +102,6 @@
 
 <div class="clock">
     <div id="marks"></div>
-    
     <div class="center-axis">
         <div class="hand hour-hand" id="h"></div>
         <div class="hand minute-hand" id="m"></div>
@@ -129,7 +130,6 @@
         const m = now.getMinutes() + s / 60;
         const h = (now.getHours() % 12) + m / 60;
 
-        // Nutzt translate3d für GPU-Power und stabilere Pixel-Positionierung
         hH.style.transform = `translateX(-50%) rotate(${h * 30}deg) translate3d(0,0,0)`;
         mH.style.transform = `translateX(-50%) rotate(${m * 6}deg) translate3d(0,0,0)`;
         sH.style.transform = `translateX(-50%) rotate(${s * 6}deg) translate3d(0,0,0)`;
